@@ -48,13 +48,16 @@ impl AudioState {
     }
 
     fn render(&mut self, mut receiver: Receiver<Input>) {
-        const BUFFER_SIZE: usize = 128;
+        const BUFFER_SIZE: usize = 64;
 
         let (_stream, stream_handle) = OutputStream::try_default().unwrap();
         let sink = Sink::try_new(&stream_handle).unwrap();
         
         let mut dt = Instant::now();
-        let buffer_time = Duration::from_secs_f32((BUFFER_SIZE - 0) as f32 / self.sample_rate as f32);
+        let buffer_time = Duration::from_secs_f32((BUFFER_SIZE) as f32 / self.sample_rate as f32);
+        let buffer_time_messages = buffer_time - Duration::from_micros(10);
+
+        println!("{buffer_time:?}");
 
         loop {
             let mut buffer = Vec::with_capacity(BUFFER_SIZE);
@@ -62,16 +65,15 @@ impl AudioState {
             for _ in 0..BUFFER_SIZE {
                 let sample = self.table.process();
                 buffer.push(sample);
-                self.update(&mut receiver);
             }
 
-            while dt.elapsed() < buffer_time {
+            while sink.len() > 16 && dt.elapsed() < buffer_time_messages {
                 self.update(&mut receiver);
             }
+            while sink.len() > 16 && dt.elapsed() < buffer_time {}
 
             let audio_buf = SamplesBuffer::new(1, self.sample_rate as u32, buffer);
 
-            println!("len {}", sink.len());
             sink.append(audio_buf);
 
             dt = Instant::now();

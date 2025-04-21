@@ -2,7 +2,7 @@ use crate::audio::module::Module;
 use crate::audio::module::midi::Midi;
 
 use super::module::analog::AnalogOscillator;
-use super::module::ModuleMessage;
+use super::module::{ModuleMessage, ModuleMessageUnion};
 
 struct Cable {
     source_module: usize,
@@ -37,7 +37,7 @@ impl ModTable {
         Self {
             modules: vec![
                 Box::new(Midi::new(0)),
-                Box::new(AnalogOscillator::new(1, 48000))
+                Box::new(AnalogOscillator::new(1, 48000)),
             ],
             cables: vec![
                 Cable::new(0, 0, 1, 0),

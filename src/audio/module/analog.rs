@@ -20,9 +20,9 @@ pub enum AnalogOscillatorUpdate {
 
 #[derive(Default)]
 struct Inputs {
+    level: f32,
     frequency: f32,
     phase: f32,
-    level: f32,
 }
 
 #[derive(Default)]
@@ -68,7 +68,7 @@ impl Module for AnalogOscillator {
         let frequency_input = self.input.frequency;
         let level_input = self.input.level;
 
-        let level = (self.level + level_input).min(1.0);
+        let level = (self.level + level_input).min(0.02);
         let frequency = (self.frequency + frequency_input).min(1.0);
         let frequency = 2.0_f32.powf(127.0 / 12.0 * frequency) * 8.176; // C-1 (midi note 0)
         let phase = (frequency * self.index as f32 / self.sample_rate as f32 + phase_input) % 1.0;
