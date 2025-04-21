@@ -2,6 +2,7 @@ use crate::audio::module::Module;
 use crate::audio::module::midi::Midi;
 
 use super::module::analog::AnalogOscillator;
+use super::module::envelope::Envelope;
 use super::module::{ModuleMessage, ModuleMessageUnion};
 
 struct Cable {
@@ -38,9 +39,11 @@ impl ModTable {
             modules: vec![
                 Box::new(Midi::new(0)),
                 Box::new(AnalogOscillator::new(1, 48000)),
+                Box::new(Envelope::new(2)),
             ],
             cables: vec![
-                Cable::new(0, 0, 1, 0),
+                Cable::new(0, 0, 2, 0),
+                Cable::new(2, 0, 1, 0),
                 Cable::new(0, 1, 1, 1),
             ],
         }

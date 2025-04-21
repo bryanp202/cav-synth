@@ -10,7 +10,7 @@ use iced::stream;
 use iced::futures::channel::mpsc::{self as iced_mpsc, Receiver};
 use module::ModuleMessage;
 use rodio::buffer::SamplesBuffer;
-use rodio::{OutputStream, Sink};
+use rodio::{OutputStream, Sink, Source};
 use table::ModTable;
 
 #[derive(Clone, Debug)]
@@ -48,13 +48,13 @@ impl AudioState {
     }
 
     fn render(&mut self, mut receiver: Receiver<Input>) {
-        const BUFFER_SIZE: usize = 64;
+        const BUFFER_SIZE: usize = 128;
 
         let (_stream, stream_handle) = OutputStream::try_default().unwrap();
         let sink = Sink::try_new(&stream_handle).unwrap();
         
         let mut dt = Instant::now();
-        let buffer_time = Duration::from_secs_f32((BUFFER_SIZE) as f32 / self.sample_rate as f32);
+        let buffer_time = Duration::from_secs_f64((BUFFER_SIZE) as f64 / self.sample_rate as f64);
         let buffer_time_messages = buffer_time - Duration::from_micros(10);
 
         println!("{buffer_time:?}");
@@ -64,13 +64,13 @@ impl AudioState {
 
             for _ in 0..BUFFER_SIZE {
                 let sample = self.table.process();
-                buffer.push(sample);
+                buffer.push(sample * 0.1);
             }
 
-            while sink.len() > 16 && dt.elapsed() < buffer_time_messages {
+            while sink.len() > 2 && dt.elapsed() < buffer_time_messages {
                 self.update(&mut receiver);
             }
-            while sink.len() > 16 && dt.elapsed() < buffer_time {}
+            while sink.len() > 2 && dt.elapsed() < buffer_time {}
 
             let audio_buf = SamplesBuffer::new(1, self.sample_rate as u32, buffer);
 

@@ -9,6 +9,8 @@ pub enum MidiUpdate {
 pub struct Midi {
     id: usize,
     gate: f32,
+    trigger: bool,
+    ready: bool,
     note: f32,
     velocity: f32,
 }
@@ -18,13 +20,22 @@ impl Module for Midi {
         self.id
     }
 
-    fn process(&mut self) {}
+    fn process(&mut self) {
+        if self.trigger {
+            self.ready = true;
+            self.trigger = false;
+        } else if self.ready {
+            self.gate = 1.0;
+            self.ready = false;
+        }
+    }
 
     fn update(&mut self, msg: ModuleMessage) {
         match msg {
             ModuleMessage::ComponentChange(msg_union) => match unsafe {msg_union.midi} {
                 MidiUpdate::KeyPress(note, velocity) => {
-                    self.gate = 1.0;
+                    self.gate = 0.0;
+                    self.trigger = true;
                     self.note = note as f32 / 127.0;
                     self.velocity = velocity as f32 / 127.0;
                 },
@@ -54,6 +65,8 @@ impl Midi {
         Self {
             id,
             gate: 0.0,
+            trigger: false,
+            ready: false,
             note: 0.0,
             velocity: 0.0,
         }

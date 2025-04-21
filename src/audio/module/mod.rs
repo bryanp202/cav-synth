@@ -1,4 +1,5 @@
 pub mod analog;
+pub mod envelope;
 pub mod midi;
 
 pub trait Module {
@@ -21,6 +22,7 @@ pub enum ModuleMessage {
 #[derive(Copy, Clone)]
 pub union ModuleMessageUnion {
     pub analog: analog::AnalogOscillatorUpdate,
+    pub envelope: envelope::EnvelopeUpdate,
     pub midi: midi::MidiUpdate,
 }
 

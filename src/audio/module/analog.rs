@@ -1,5 +1,3 @@
-use std::default;
-
 use crate::audio::module::{Module, ModuleMessage};
 
 #[derive(Clone, Copy, Debug)]
@@ -37,7 +35,7 @@ pub struct AnalogOscillator {
     level: f32,
     frequency: f32,
     phase: f32,
-    index: usize,
+    current_phase: f32,
     input: Inputs,
     output: Outputs,
 }
@@ -48,7 +46,7 @@ impl AnalogOscillator {
             id,
             sample_rate,
             level: 0.0,
-            index: 0,
+            current_phase: 0.0,
             frequency: 0.0,
             shape: WaveShape::Sine,
             phase: 0.0,
@@ -68,10 +66,10 @@ impl Module for AnalogOscillator {
         let frequency_input = self.input.frequency;
         let level_input = self.input.level;
 
-        let level = (self.level + level_input).min(0.02);
-        let frequency = (self.frequency + frequency_input).min(1.0);
+        let level = (self.level + level_input).min(1.0).max(0.0);
+        let frequency = (self.frequency + frequency_input).min(1.0).max(0.0);
         let frequency = 2.0_f32.powf(127.0 / 12.0 * frequency) * 8.176; // C-1 (midi note 0)
-        let phase = (frequency * self.index as f32 / self.sample_rate as f32 + phase_input) % 1.0;
+        let phase = (self.current_phase + phase_input) % 1.0;
 
         let raw = match self.shape {
             WaveShape::Saw => 1.0 - 2.0 * phase,
@@ -80,10 +78,9 @@ impl Module for AnalogOscillator {
             WaveShape::Triangle => 1.0 - 4.0 * (phase - (phase + 0.5).floor()).abs(),
         };
 
-        self.index = (self.index + 1) % self.sample_rate;
+        self.current_phase = (self.current_phase + frequency / self.sample_rate as f32) % 1.0;
 
         let scaled_raw = raw * level;
-        //println!("level {}", self.level);
         self.output.value = f32::from(scaled_raw);
     }
 
