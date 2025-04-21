@@ -7,3 +7,4 @@ edition = "2021"
 rodio = "0.20.1"
 iced = { version = "0.13", features = ["tokio"] }
 tokio = { version = "1", features = ["rt"] }
+midir = "0.10.1"

@@ -1,5 +1,4 @@
-use crate::audio::module::{Module, ModuleId, ModuleMessage, ModuleMessageUnion};
-use crate::audio::sample::Sample;
+use crate::audio::module::{Module, ModuleMessage};
 
 #[derive(Clone, Copy, Debug)]
 pub enum MidiUpdate {
@@ -8,52 +7,55 @@ pub enum MidiUpdate {
 }
 
 pub struct Midi {
-    id: ModuleId,
-    gate: bool,
-    note: u8,
-    velocity: u8,
+    id: usize,
+    gate: f32,
+    note: f32,
+    velocity: f32,
 }
 
 impl Module for Midi {
-    fn id(&self) -> &ModuleId {
-        &self.id
+    fn id(&self) -> usize {
+        self.id
     }
 
-    fn process(&mut self) -> Box<[Sample]> {
-        Box::new([
-            Sample::from(self.gate as u8 as f32),
-            Sample::from(self.note as f32 / 127.0),
-            Sample::from(self.velocity as f32 / 127.0),
-        ])
-    }
+    fn process(&mut self) {}
 
     fn update(&mut self, msg: ModuleMessage) {
         match msg {
             ModuleMessage::ComponentChange(msg_union) => match unsafe {msg_union.midi} {
                 MidiUpdate::KeyPress(note, velocity) => {
-                  self.gate = true;
-                  self.note = note;
-                  self.velocity = velocity;
+                    self.gate = 1.0;
+                    self.note = note as f32 / 127.0;
+                    self.velocity = velocity as f32 / 127.0;
                 },
-                MidiUpdate::KeyRelease(_) => {
-                    self.gate = false;
+                MidiUpdate::KeyRelease(note) => {
+                    if self.note == note as f32 / 127.0 {
+                        self.gate = 0.0;
+                    }
                 }
             }
         }
     }
 
-    fn modulate(&mut self, component: usize, value: Sample) {
-        
+    fn get_output(&self, target_output: usize) -> f32 {
+        match target_output {
+            0 => self.gate,
+            1 => self.note,
+            2 => self.velocity,
+            _ => unreachable!(),
+        }
     }
+
+    fn modulate(&mut self, component: usize, value: f32) {}
 }
 
 impl Midi {
-    pub fn new(id: ModuleId) -> Midi {
+    pub fn new(id: usize) -> Midi {
         Self {
             id,
-            gate: false,
-            note: 0,
-            velocity: 0,
+            gate: 0.0,
+            note: 0.0,
+            velocity: 0.0,
         }
     }
 }

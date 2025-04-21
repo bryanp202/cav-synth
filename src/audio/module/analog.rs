@@ -1,8 +1,6 @@
 use std::default;
 
-use iced::Length::Shrink;
-
-use crate::audio::module::{Module, ModuleId, ModuleMessage, Sample};
+use crate::audio::module::{Module, ModuleMessage};
 
 #[derive(Clone, Copy, Debug)]
 pub enum WaveShape {
@@ -22,12 +20,18 @@ pub enum AnalogOscillatorUpdate {
 
 #[derive(Default)]
 struct Inputs {
-    frequency: Sample,
-    phase: Sample,
-    level: Sample,
+    frequency: f32,
+    phase: f32,
+    level: f32,
 }
+
+#[derive(Default)]
+struct Outputs {
+    value: f32,
+}
+
 pub struct AnalogOscillator {
-    id: ModuleId,
+    id: usize,
     sample_rate: usize,
     shape: WaveShape,
     level: f32,
@@ -35,36 +39,38 @@ pub struct AnalogOscillator {
     phase: f32,
     index: usize,
     input: Inputs,
+    output: Outputs,
 }
 
 impl AnalogOscillator {
-    fn new(id: ModuleId, sample_rate: usize) -> Self {
+    pub fn new(id: usize, sample_rate: usize) -> Self {
         Self {
             id,
             sample_rate,
-            level: 1.0,
+            level: 0.0,
             index: 0,
             frequency: 0.0,
             shape: WaveShape::Sine,
             phase: 0.0,
             input: Inputs::default(),
+            output: Outputs::default(),
         }
     }
 }
 
 impl Module for AnalogOscillator {
-    fn id(&self) -> &ModuleId {
-        &self.id
+    fn id(&self) -> usize {
+        self.id
     }
 
-    fn process(&mut self) -> Box<[Sample]> {
-        let phase_input: f32 = self.input.phase.into();
-        let frequency_input: f32 = self.input.frequency.into();
-        let level_input: f32 = self.input.level.into();
+    fn process(&mut self) {
+        let phase_input = self.input.phase;
+        let frequency_input = self.input.frequency;
+        let level_input = self.input.level;
 
-        let level = (self.level + level_input) % 1.0;
-        let frequency = (self.frequency + frequency_input) % 1.0;
-        let frequency = 2.0_f32.powf(frequency * 8.0) + 13.75;
+        let level = (self.level + level_input).min(1.0);
+        let frequency = (self.frequency + frequency_input).min(1.0);
+        let frequency = 2.0_f32.powf(127.0 / 12.0 * frequency) * 8.176; // C-1 (midi note 0)
         let phase = (frequency * self.index as f32 / self.sample_rate as f32 + phase_input) % 1.0;
 
         let raw = match self.shape {
@@ -77,7 +83,8 @@ impl Module for AnalogOscillator {
         self.index = (self.index + 1) % self.sample_rate;
 
         let scaled_raw = raw * level;
-        Box::new([Sample::from(scaled_raw)])
+        //println!("level {}", self.level);
+        self.output.value = f32::from(scaled_raw);
     }
 
     fn update(&mut self, msg: ModuleMessage) {
@@ -91,7 +98,14 @@ impl Module for AnalogOscillator {
         }
     }
 
-    fn modulate(&mut self, component: usize, value: Sample) {
+    fn get_output(&self, target_output: usize) -> f32 {
+        match target_output {
+            0 => self.output.value,
+            _ => unreachable!(),
+        }
+    }
+
+    fn modulate(&mut self, component: usize, value: f32) {
         match component {
             0 => self.input.level = value,
             1 => self.input.frequency = value,

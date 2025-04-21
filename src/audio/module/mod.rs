@@ -1,35 +1,16 @@
 pub mod analog;
 pub mod midi;
 
-use crate::audio::sample::Sample;
-
 pub trait Module {
-    fn id(&self) -> &ModuleId;
+    fn id(&self) -> usize;
 
-    fn process(&mut self) -> Box<[Sample]>;
+    fn process(&mut self);
 
     fn update(&mut self, msg: ModuleMessage);
 
-    fn modulate(&mut self, component: usize, value: Sample);
-}
+    fn get_output(&self, target_output: usize) -> f32;
 
-#[derive(Clone, Copy, Debug)]
-pub struct ModuleId {
-    num: usize,
-}
-
-impl From<usize> for ModuleId {
-    fn from(value: usize) -> Self {
-        Self {
-            num: value,
-        }
-    }
-}
-
-impl Into<usize> for ModuleId {
-    fn into(self) -> usize {
-        self.num
-    }
+    fn modulate(&mut self, component: usize, value: f32);
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -39,8 +20,8 @@ pub enum ModuleMessage {
 
 #[derive(Copy, Clone)]
 pub union ModuleMessageUnion {
-    analog: analog::AnalogOscillatorUpdate,
-    midi: midi::MidiUpdate,
+    pub analog: analog::AnalogOscillatorUpdate,
+    pub midi: midi::MidiUpdate,
 }
 
 impl std::fmt::Debug for ModuleMessageUnion {
