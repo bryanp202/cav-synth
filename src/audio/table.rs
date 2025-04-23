@@ -3,6 +3,7 @@ use crate::audio::module::midi::Midi;
 
 use super::module::analog::AnalogOscillator;
 use super::module::butterworth::Butterworth;
+use super::module::chorus::Chorus;
 use super::module::delay::Delay;
 use super::module::envelope::Envelope;
 use super::module::{ModuleMessage, ModuleMessageUnion};
@@ -76,7 +77,8 @@ impl ModTable {
                 osc11,
                 Box::new(Envelope::new(12)),
                 Box::new(Butterworth::new(13, 48000)),
-                Box::new(Delay::new(14, 48000)),
+                Box::new(Chorus::new(14, 48000)),
+                Box::new(Delay::new(15, 48000)),
             ],
             cables: vec![
                 Cable::new(0, 0, 12, 0),
@@ -84,6 +86,7 @@ impl ModTable {
                 Cable::new(12, 0, 1, 0),
                 Cable::new(12, 0, 13, 1),
                 Cable::new(13, 0, 14, 0),
+                Cable::new(14, 0, 15, 0),
                 //Cable::new(12, 0, 2, 0),
                 //Cable::new(12, 0, 3, 0),
                 //Cable::new(12, 0, 4, 0),
@@ -132,7 +135,7 @@ impl ModTable {
             self.modules[input_module_index].modulate(cable.target_input, output);
         });
 
-        self.modules[14].get_output(0)
+        self.modules[15].get_output(0)
     }
 
     pub fn update(&mut self, id: usize, msg: ModuleMessage) {

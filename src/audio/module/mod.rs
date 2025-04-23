@@ -1,7 +1,9 @@
 pub mod analog;
 pub mod butterworth;
+pub mod chorus;
 pub mod delay;
 pub mod envelope;
+pub mod lfo;
 pub mod midi;
 
 pub trait Module {
@@ -25,9 +27,11 @@ pub enum ModuleMessage {
 pub union ModuleMessageUnion {
     pub analog: analog::AnalogOscillatorUpdate,
     pub butterworth: butterworth::ButterworthUpdate,
+    pub chorus: chorus::ChorusUpdate,
     pub delay: delay::DelayUpdate,
     pub envelope: envelope::EnvelopeUpdate,
     pub midi: midi::MidiUpdate,
+    pub lfo: lfo::LFOUpdate,
 }
 
 impl std::fmt::Debug for ModuleMessageUnion {

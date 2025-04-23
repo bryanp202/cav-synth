@@ -42,7 +42,7 @@ impl Synth {
                 midi_thread_connection: None,
 
                 // Testing
-                delay_slider_value: 10.0,
+                delay_slider_value: 100.0,
             },
             Task::none()
         )
@@ -111,8 +111,8 @@ impl Synth {
             // Testing
             Message::DelaySlider(time) => {
                 if let Some(connection) = &mut self.audio_thread_connection {
-                    let input = ModuleMessage::ComponentChange(ModuleMessageUnion {delay: audio::module::delay::DelayUpdate::Time(time / 10.0)});
-                    let _ = connection.try_send(audio::Input::ModuleMessage(14, input));
+                    let input = ModuleMessage::ComponentChange(ModuleMessageUnion {delay: audio::module::delay::DelayUpdate::Time(time / 100.0)});
+                    let _ = connection.try_send(audio::Input::ModuleMessage(15, input));
                 }
                 self.delay_slider_value = time;
                 Task::none()
@@ -162,7 +162,7 @@ impl Synth {
                         ),
                     )),
             ],
-            slider(0.0..=60.0, self.delay_slider_value, Message::DelaySlider)
+            slider(0.0..=600.0, self.delay_slider_value, Message::DelaySlider)
                 .width(Length::Fill),
         ].into()
     }
