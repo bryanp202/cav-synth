@@ -6,7 +6,7 @@ use crate::audio::module::midi::MidiUpdate;
 
 use iced::{window, Element, Length, Subscription, Task};
 use iced::futures::channel::mpsc::Sender;
-use iced::widget::{button, column, row};
+use iced::widget::{button, column, row, slider};
 
 
 #[derive(Clone, Debug)]
@@ -14,14 +14,24 @@ pub enum Message {
     AudioThreadReady(Sender<audio::Input>),
     Close(window::Id),
     ComponentChange(usize, ModuleMessage),
+    MidiThreadReady(Sender<midi::Input>),
+
+    // MIDI
     KeyPress(u8, u8),
     KeyRelease(u8),
-    MidiThreadReady(Sender<midi::Input>),
+    PedalPress,
+    PedalRelease,
+
+    // Testing
+    DelaySlider(f32),
 }
 
 pub struct Synth {
     audio_thread_connection: Option<Sender<audio::Input>>,
     midi_thread_connection: Option<Sender<midi::Input>>,
+
+    // Testing
+    delay_slider_value: f32,
 }
 
 impl Synth {
@@ -30,6 +40,9 @@ impl Synth {
             Self {
                 audio_thread_connection: None,
                 midi_thread_connection: None,
+
+                // Testing
+                delay_slider_value: 10.0,
             },
             Task::none()
         )
@@ -60,6 +73,12 @@ impl Synth {
                 }
                 Task::none()
             },
+            Message::MidiThreadReady(connection) => {
+                self.midi_thread_connection = Some(connection);
+                Task::none()
+            },
+
+            // MIDI
             Message::KeyPress(note, velocity) => {
                 if let Some(connection) = &mut self.audio_thread_connection {
                     let input = ModuleMessage::ComponentChange(ModuleMessageUnion {midi: MidiUpdate::KeyPress(note, velocity)});
@@ -74,10 +93,30 @@ impl Synth {
                 }
                 Task::none()
             },
-            Message::MidiThreadReady(connection) => {
-                self.midi_thread_connection = Some(connection);
+            Message::PedalPress => {
+                if let Some(connection) = &mut self.audio_thread_connection {
+                    let input = ModuleMessage::ComponentChange(ModuleMessageUnion {midi: MidiUpdate::PedalPress});
+                    let _ = connection.try_send(audio::Input::ModuleMessage(0, input));
+                }
                 Task::none()
             },
+            Message::PedalRelease => {
+                if let Some(connection) = &mut self.audio_thread_connection {
+                    let input = ModuleMessage::ComponentChange(ModuleMessageUnion {midi: MidiUpdate::PedalRelease});
+                    let _ = connection.try_send(audio::Input::ModuleMessage(0, input));
+                }
+                Task::none()
+            },
+
+            // Testing
+            Message::DelaySlider(time) => {
+                if let Some(connection) = &mut self.audio_thread_connection {
+                    let input = ModuleMessage::ComponentChange(ModuleMessageUnion {delay: audio::module::delay::DelayUpdate::Time(time / 10.0)});
+                    let _ = connection.try_send(audio::Input::ModuleMessage(14, input));
+                }
+                self.delay_slider_value = time;
+                Task::none()
+            }
         }
     }
 
@@ -123,6 +162,8 @@ impl Synth {
                         ),
                     )),
             ],
+            slider(0.0..=60.0, self.delay_slider_value, Message::DelaySlider)
+                .width(Length::Fill),
         ].into()
     }
 

@@ -54,6 +54,18 @@ impl AnalogOscillator {
             output: Outputs::default(),
         }
     }
+
+    fn poly_blep(phase: f32, phase_increment: f32) -> f32 {
+        if phase < phase_increment {
+            let t = phase / phase_increment;
+            t+t - t*t - 1.0
+        } else if phase > 1.0 - phase_increment {
+            let t = (phase - 1.0) / phase_increment;
+            t*t + t+t + 1.0
+        } else {
+            0.0
+        }
+    }
 }
 
 impl Module for AnalogOscillator {
@@ -71,14 +83,19 @@ impl Module for AnalogOscillator {
         let frequency = 2.0_f32.powf(127.0 / 12.0 * frequency) * 8.176; // C-1 (midi note 0)
         let phase = (self.current_phase + phase_input) % 1.0;
 
+        let phase_increment = frequency / self.sample_rate as f32;
+
         let raw = match self.shape {
-            WaveShape::Saw => 1.0 - 2.0 * phase,
+            WaveShape::Saw => 2.0 * phase - 1.0 - AnalogOscillator::poly_blep(phase, phase_increment),
             WaveShape::Sine => (2.0 * std::f32::consts::PI * phase).sin(),
-            WaveShape::Square => if phase >= 0.5 {1.0} else {-1.0},
+            WaveShape::Square => {
+                let raw = if phase < 0.5 {1.0} else {-1.0};
+                raw + AnalogOscillator::poly_blep(phase, phase_increment) - AnalogOscillator::poly_blep((phase + 0.5) % 1.0, phase_increment)
+            },
             WaveShape::Triangle => 1.0 - 4.0 * (phase - (phase + 0.5).floor()).abs(),
         };
 
-        self.current_phase = (self.current_phase + frequency / self.sample_rate as f32) % 1.0;
+        self.current_phase = (self.current_phase + phase_increment) % 1.0;
 
         let scaled_raw = raw * level;
         self.output.value = f32::from(scaled_raw);

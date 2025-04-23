@@ -1,4 +1,6 @@
 pub mod analog;
+pub mod butterworth;
+pub mod delay;
 pub mod envelope;
 pub mod midi;
 
@@ -22,6 +24,8 @@ pub enum ModuleMessage {
 #[derive(Copy, Clone)]
 pub union ModuleMessageUnion {
     pub analog: analog::AnalogOscillatorUpdate,
+    pub butterworth: butterworth::ButterworthUpdate,
+    pub delay: delay::DelayUpdate,
     pub envelope: envelope::EnvelopeUpdate,
     pub midi: midi::MidiUpdate,
 }

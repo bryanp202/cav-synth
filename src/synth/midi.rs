@@ -30,7 +30,7 @@ pub fn listen() -> impl Stream<Item = Message> {
             "synth-midi", 
             move |_stamp, message, _| {
                 match message[0] {
-                    144 => {
+                    144 => { // Key press / key release
                         if message[2] != 0 {
                             output.try_send(Message::KeyPress(message[1], message[2])).unwrap();
                         } else {
@@ -38,9 +38,21 @@ pub fn listen() -> impl Stream<Item = Message> {
                         }
                     }
 
+                    176 => { // Pedal press
+                        match message[1] {
+                            64 => {
+                                if message[2] == 0 {
+                                    output.try_send(Message::PedalRelease).unwrap();
+                                } else {
+                                    output.try_send(Message::PedalPress).unwrap();
+                                }
+                            }
+                            _ => ()
+                        }
+                    }
+
                     _ => (),
                 }
-                
             },
             (),
         );

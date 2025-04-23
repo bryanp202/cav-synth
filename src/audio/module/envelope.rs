@@ -13,6 +13,7 @@ pub enum EnvelopeUpdate {
 #[derive(Default)]
 struct Inputs {
     gate: f32,
+    velocity: f32,
     attack: f32,
     decay: f32,
     release: f32,
@@ -46,9 +47,9 @@ impl Envelope {
             start_value: 0.0,
             released: None,
             release_start_value: 0.0,
-            attack: 0.02,
-            decay: 0.6,
-            release: 0.5,
+            attack: 0.006,
+            decay: 1.2,
+            release: 0.1,
             sustain: 0.0,
             input: Inputs::default(),
             output: Outputs::default(),
@@ -84,7 +85,7 @@ impl Module for Envelope {
 
     fn get_output(&self, target_output: usize) -> f32 {
         match target_output {
-            0 => self.output.value,
+            0 => self.output.value * self.input.velocity,
             _ => unreachable!(),
         }
     }
@@ -107,10 +108,11 @@ impl Module for Envelope {
                     }
                 }
             },
-            1 => self.input.attack = value,
-            2 => self.input.decay = value,
-            3 => self.input.release = value,
-            4 => self.input.sustain = value,
+            1 => self.input.velocity = value,
+            2 => self.input.attack = value,
+            3 => self.input.decay = value,
+            4 => self.input.release = value,
+            5 => self.input.sustain = value,
             _ => unreachable!(),
         }
     }
