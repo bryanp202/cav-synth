@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [profile.release]
-strip = true
+# strip = true
 panic = "abort"
 
 [dependencies]
@@ -12,3 +12,5 @@ rodio = "0.20.1"
 iced = { version = "0.13", features = ["tokio"] }
 tokio = { version = "1.*", features = ["rt"] }
 midir = "0.10.1"
+
+audio_thread_priority = "*"

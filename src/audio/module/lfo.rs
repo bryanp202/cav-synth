@@ -9,7 +9,7 @@ pub enum WaveShape {
 }
 
 #[derive(Clone, Copy, Debug)]
-pub enum LFOUpdate {
+pub enum LfoUpdate {
     SampleRate(usize),
     Frequency(f32),
     Phase(f32),
@@ -29,7 +29,7 @@ struct Outputs {
     quarter_phase: f32,
 }
 
-pub struct LFO {
+pub struct Lfo {
     id: usize,
     sample_rate: usize,
     shape: WaveShape,
@@ -41,7 +41,7 @@ pub struct LFO {
     output: Outputs,
 }
 
-impl LFO {
+impl Lfo {
     pub fn new(id: usize, sample_rate: usize) -> Self {
         Self {
             id,
@@ -62,7 +62,7 @@ impl LFO {
     }
 }
 
-impl Module for LFO {
+impl Module for Lfo {
     fn id(&self) -> usize {
         self.id
     }
@@ -107,10 +107,10 @@ impl Module for LFO {
     fn update(&mut self, msg: ModuleMessage) {
         match msg {
             ModuleMessage::ComponentChange(msg_union) => match unsafe {msg_union.lfo} {
-                LFOUpdate::SampleRate(sample_rate) => self.sample_rate = sample_rate,
-                LFOUpdate::Frequency(frequency) => self.frequency = frequency,
-                LFOUpdate::Phase(phase) => self.phase = phase,
-                LFOUpdate::Shape(shape) => self.shape = shape,
+                LfoUpdate::SampleRate(sample_rate) => self.sample_rate = sample_rate,
+                LfoUpdate::Frequency(frequency) => self.frequency = frequency,
+                LfoUpdate::Phase(phase) => self.phase = phase,
+                LfoUpdate::Shape(shape) => self.shape = shape,
             }
         }
     }

@@ -48,16 +48,23 @@ impl AudioState {
     }
 
     fn render(&mut self, mut receiver: Receiver<Input>) {
-        const BUFFER_SIZE: usize = 64;
+        const BUFFER_SIZE: usize = 128;
+
+        match audio_thread_priority::promote_current_thread_to_real_time(0, 48000) {
+            Ok(_) => println!("Upgraded thread to real time"),
+            Err(e) => eprintln!("Error on upgrade to real time: {e}"),
+
+        }
 
         let (_stream, stream_handle) = OutputStream::try_default().unwrap();
         let sink = Sink::try_new(&stream_handle).unwrap();
         
-        let mut dt = Instant::now();
         let buffer_time = Duration::from_secs_f64((BUFFER_SIZE) as f64 / self.sample_rate as f64);
         let buffer_time_messages = buffer_time - Duration::from_micros(50);
 
         println!("{buffer_time:?}");
+
+        let mut dt = Instant::now();
 
         loop {
             let mut buffer = Vec::with_capacity(BUFFER_SIZE);
@@ -67,11 +74,10 @@ impl AudioState {
                 buffer.push(sample * 0.1);
             }
 
-            println!("{:?}", dt.elapsed());
-            while sink.len() > 2 && dt.elapsed() < buffer_time_messages {
+            while dt.elapsed() < buffer_time_messages {
                 self.update(&mut receiver);
             }
-            while sink.len() > 2 && dt.elapsed() < buffer_time {}
+            while dt.elapsed() < buffer_time {}
 
             let audio_buf = SamplesBuffer::new(1, self.sample_rate as u32, buffer);
 

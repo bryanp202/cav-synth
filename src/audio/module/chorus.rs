@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 
 use crate::audio::module::{Module, ModuleMessage};
 
-use crate::audio::module::lfo::LFO;
+use crate::audio::module::lfo::Lfo;
 
 const MAX_CHORUS_SAMPLES: usize = 512;
 
@@ -30,7 +30,7 @@ pub struct Chorus {
     output: Outputs,
     // State
     buffer: VecDeque<f32>,
-    lfo: LFO,
+    lfo: Lfo,
 }
 
 impl Chorus {
@@ -42,7 +42,7 @@ impl Chorus {
             input: Inputs::default(),
             output: Outputs::default(),
             buffer: VecDeque::with_capacity(MAX_CHORUS_SAMPLES),
-            lfo: LFO::new(id, sample_rate).frequency(0.05)
+            lfo: Lfo::new(id, sample_rate).frequency(0.05)
         }
     }
 }

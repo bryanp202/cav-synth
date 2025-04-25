@@ -31,7 +31,7 @@ pub union ModuleMessageUnion {
     pub delay: delay::DelayUpdate,
     pub envelope: envelope::EnvelopeUpdate,
     pub midi: midi::MidiUpdate,
-    pub lfo: lfo::LFOUpdate,
+    pub lfo: lfo::LfoUpdate,
 }
 
 impl std::fmt::Debug for ModuleMessageUnion {
