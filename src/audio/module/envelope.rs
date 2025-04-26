@@ -48,7 +48,7 @@ impl Envelope {
             released: None,
             release_start_value: 0.0,
             attack: 0.006,
-            decay: 1.2,
+            decay: 1.0,
             release: 0.1,
             sustain: 0.0,
             input: Inputs::default(),
