@@ -48,7 +48,7 @@ impl AnalogOscillator {
             level: 0.0,
             current_phase: 0.0,
             frequency: 0.0,
-            shape: WaveShape::Sine,
+            shape: WaveShape::Saw,
             phase: 0.0,
             input: Inputs::default(),
             output: Outputs::default(),

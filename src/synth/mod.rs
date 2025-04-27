@@ -112,7 +112,7 @@ impl Synth {
             Message::DelaySlider(time) => {
                 if let Some(connection) = &mut self.audio_thread_connection {
                     let input = ModuleMessage::ComponentChange(ModuleMessageUnion {delay: audio::module::delay::DelayUpdate::Time(time / 100.0)});
-                    let _ = connection.try_send(audio::Input::ModuleMessage(15, input));
+                    let _ = connection.try_send(audio::Input::ModuleMessage(50, input));
                 }
                 self.delay_slider_value = time;
                 Task::none()
