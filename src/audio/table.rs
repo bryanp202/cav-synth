@@ -6,7 +6,7 @@ use super::module::butterworth::Butterworth;
 use super::module::chorus::Chorus;
 use super::module::delay::Delay;
 use super::module::envelope::Envelope;
-use super::module::{ModuleMessage, ModuleMessageUnion};
+use super::module::ModuleMessage;
 
 struct Cable {
     source_module: usize,
