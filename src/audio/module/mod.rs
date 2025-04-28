@@ -1,10 +1,13 @@
+pub mod allpass;
 pub mod analog;
 pub mod butterworth;
+pub mod comb;
 pub mod chorus;
 pub mod delay;
 pub mod envelope;
 pub mod lfo;
 pub mod midi;
+pub mod reverb;
 
 pub trait Module {
     fn id(&self) -> usize;
@@ -25,13 +28,16 @@ pub enum ModuleMessage {
 
 #[derive(Copy, Clone)]
 pub union ModuleMessageUnion {
+    pub allpass: allpass::AllpassUpdate,
     pub analog: analog::AnalogOscillatorUpdate,
     pub butterworth: butterworth::ButterworthUpdate,
+    pub comb: comb::CombUpdate,
     pub chorus: chorus::ChorusUpdate,
     pub delay: delay::DelayUpdate,
     pub envelope: envelope::EnvelopeUpdate,
     pub midi: midi::MidiUpdate,
     pub lfo: lfo::LfoUpdate,
+    pub reverb: reverb::ReverbUpdate,
 }
 
 impl std::fmt::Debug for ModuleMessageUnion {

@@ -51,6 +51,7 @@ pub struct Midi {
 
     // Poly voices
     voices: [Voice; POLY_VOICE_COUNT],
+    next: usize,
     
     replace_queue: VecDeque<usize>,
 }
@@ -93,8 +94,9 @@ impl Module for Midi {
 
                     // Poly
                     let new_voice;
-                    if let Some(voice) = self.voices.iter().position(|voice| !voice.on ) {
-                        new_voice = voice;
+                    if let Some(voice) = self.voices.iter().cycle().skip(self.next).take(POLY_VOICE_COUNT).position(|voice| !voice.on ) {
+                        new_voice = (voice + self.next) % POLY_VOICE_COUNT;
+                        self.next = (self.next + 1) % POLY_VOICE_COUNT;
                     } else {
                         new_voice = self.replace_queue.pop_front().unwrap();
                     }
@@ -192,6 +194,7 @@ impl Midi {
 
             voices: [Voice::default(); POLY_VOICE_COUNT],
             replace_queue: VecDeque::with_capacity(POLY_VOICE_COUNT),
+            next: 0,
         }
     }
 }

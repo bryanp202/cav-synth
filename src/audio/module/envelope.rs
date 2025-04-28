@@ -28,7 +28,6 @@ struct Outputs {
 pub struct Envelope {
     id: usize,
     start: Option<Instant>,
-    start_value: f32,
     released: Option<Instant>,
     release_start_value: f32,
     attack: f32,
@@ -44,13 +43,12 @@ impl Envelope {
         Self {
             id,
             start: None,
-            start_value: 0.0,
             released: None,
             release_start_value: 0.0,
-            attack: 0.006,
+            attack: 1.5,
             decay: 1.0,
-            release: 0.1,
-            sustain: 0.0,
+            release: 2.0,
+            sustain: 0.6,
             input: Inputs::default(),
             output: Outputs::default(),
         }
@@ -66,7 +64,7 @@ impl Module for Envelope {
         if let Some(start_time) = self.start {
             let elapsed = start_time.elapsed().as_secs_f32();
             if elapsed < self.attack {
-                self.output.value = self.start_value + (1.0 - self.start_value) * elapsed / self.attack;
+                self.output.value = 1.0 * elapsed / self.attack;
             } else {
                 let since_decay = elapsed - self.attack;
                 let peak_sustain_delta = 1.0 - self.sustain;
@@ -98,7 +96,6 @@ impl Module for Envelope {
                     if let None = self.start {
                         self.start = Some(Instant::now());
                         self.released = None;
-                        self.start_value = self.output.value;
                     }
                 } else {
                     if let None = self.released {

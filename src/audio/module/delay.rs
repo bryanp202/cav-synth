@@ -36,8 +36,8 @@ impl Delay {
         Self {
             id,
             sample_rate,
-            ratio: 0.4,
-            time: 1.0,
+            ratio: 0.0,
+            time: 0.0,
             input: Inputs::default(),
             output: Outputs::default(),
             buffer: VecDeque::with_capacity(MAX_DELAY_SAMPLES),
@@ -77,7 +77,7 @@ impl Module for Delay {
                     if time == 0.0 {
                         self.ratio = 0.0;
                     } else {
-                        self.ratio = 0.5;
+                        self.ratio = 0.4;
                     }
                 },
             }

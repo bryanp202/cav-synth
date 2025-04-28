@@ -42,7 +42,7 @@ impl Synth {
                 midi_thread_connection: None,
 
                 // Testing
-                delay_slider_value: 100.0,
+                delay_slider_value: 0.0,
             },
             Task::none()
         )

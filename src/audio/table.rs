@@ -6,6 +6,7 @@ use super::module::butterworth::Butterworth;
 use super::module::chorus::Chorus;
 use super::module::delay::Delay;
 use super::module::envelope::Envelope;
+use super::module::reverb::Reverb;
 use super::module::ModuleMessage;
 
 struct Cable {
@@ -91,6 +92,7 @@ impl ModTable {
                 Box::new(Butterworth::new(48, 48000)),
                 Box::new(Chorus::new(49, 48000)),
                 Box::new(Delay::new(50, 48000)),
+                Box::new(Reverb::new(51, 48000)),
             ],
             cables: vec![
                 // Osc1
@@ -99,7 +101,8 @@ impl ModTable {
                 Cable::new(17, 0, 1, 0),
                 Cable::new(0, 4, 1, 1),
                 Cable::new(1, 0, 33, 0),
-                Cable::new(17, 0, 33, 1),
+                Cable::new(0, 4, 33, 1),
+                //Cable::new(17, 0, 33, 1),
                 Cable::new(33, 0, 49, 0),
                 // Osc2
                 Cable::new(0, 6, 18, 0),
@@ -107,7 +110,8 @@ impl ModTable {
                 Cable::new(18, 0, 2, 0),
                 Cable::new(0, 7, 2, 1),
                 Cable::new(2, 0, 34, 0),
-                Cable::new(18, 0, 34, 1),
+                Cable::new(0, 7, 34, 1),
+                //Cable::new(18, 0, 34, 1),
                 Cable::new(34, 0, 49, 0),
                 // Osc3
                 Cable::new(0, 9, 19, 0),
@@ -115,7 +119,8 @@ impl ModTable {
                 Cable::new(19, 0, 3, 0),
                 Cable::new(0, 10, 3, 1),
                 Cable::new(3, 0, 35, 0),
-                Cable::new(19, 0, 35, 1),
+                Cable::new(0, 10, 35, 1),
+                //Cable::new(19, 0, 35, 1),
                 Cable::new(35, 0, 49, 0),
                 // Osc4
                 Cable::new(0, 12, 20, 0),
@@ -123,7 +128,8 @@ impl ModTable {
                 Cable::new(20, 0, 4, 0),
                 Cable::new(0, 13, 4, 1),
                 Cable::new(4, 0, 36, 0),
-                Cable::new(20, 0, 36, 1),
+                Cable::new(0, 13, 36, 1),
+                //Cable::new(20, 0, 36, 1),
                 Cable::new(36, 0, 49, 0),
                 // Osc5
                 Cable::new(0, 15, 21, 0),
@@ -131,7 +137,8 @@ impl ModTable {
                 Cable::new(21, 0, 5, 0),
                 Cable::new(0, 16, 5, 1),
                 Cable::new(5, 0, 37, 0),
-                Cable::new(21, 0, 37, 1),
+                Cable::new(0, 16, 37, 1),
+                //Cable::new(21, 0, 37, 1),
                 Cable::new(37, 0, 49, 0),
                 // Osc6
                 Cable::new(0, 18, 22, 0),
@@ -139,7 +146,8 @@ impl ModTable {
                 Cable::new(22, 0, 6, 0),
                 Cable::new(0, 19, 6, 1),
                 Cable::new(6, 0, 38, 0),
-                Cable::new(22, 0, 38, 1),
+                Cable::new(0, 19, 38, 1),
+                //Cable::new(22, 0, 38, 1),
                 Cable::new(38, 0, 49, 0),
                 // Osc7
                 Cable::new(0, 21, 23, 0),
@@ -147,7 +155,8 @@ impl ModTable {
                 Cable::new(23, 0, 7, 0),
                 Cable::new(0, 22, 7, 1),
                 Cable::new(7, 0, 39, 0),
-                Cable::new(23, 0, 39, 1),
+                Cable::new(0, 22, 39, 1),
+                //Cable::new(23, 0, 39, 1),
                 Cable::new(39, 0, 49, 0),
                 // Osc8
                 Cable::new(0, 24, 24, 0),
@@ -155,7 +164,8 @@ impl ModTable {
                 Cable::new(24, 0, 8, 0),
                 Cable::new(0, 25, 8, 1),
                 Cable::new(8, 0, 40, 0),
-                Cable::new(24, 0, 40, 1),
+                Cable::new(0, 25, 40, 1),
+                //Cable::new(24, 0, 40, 1),
                 Cable::new(40, 0, 49, 0),
                 // Osc9
                 Cable::new(0, 27, 25, 0),
@@ -163,7 +173,8 @@ impl ModTable {
                 Cable::new(25, 0, 9, 0),
                 Cable::new(0, 28, 9, 1),
                 Cable::new(9, 0, 41, 0),
-                Cable::new(25, 0, 41, 1),
+                Cable::new(0, 28, 41, 1),
+                //Cable::new(25, 0, 41, 1),
                 Cable::new(41, 0, 49, 0),
                 // Osc10
                 Cable::new(0, 30, 26, 0),
@@ -171,7 +182,8 @@ impl ModTable {
                 Cable::new(26, 0, 10, 0),
                 Cable::new(0, 31, 10, 1),
                 Cable::new(10, 0, 42, 0),
-                Cable::new(26, 0, 42, 1),
+                Cable::new(0, 31, 42, 1),
+                //Cable::new(26, 0, 42, 1),
                 Cable::new(42, 0, 49, 0),
                 // Osc11
                 Cable::new(0, 33, 27, 0),
@@ -179,7 +191,8 @@ impl ModTable {
                 Cable::new(27, 0, 11, 0),
                 Cable::new(0, 34, 11, 1),
                 Cable::new(11, 0, 43, 0),
-                Cable::new(27, 0, 43, 1),
+                Cable::new(0, 34, 43, 1),
+                //Cable::new(27, 0, 43, 1),
                 Cable::new(43, 0, 49, 0),
                 // Osc12
                 Cable::new(0, 36, 28, 0),
@@ -187,7 +200,8 @@ impl ModTable {
                 Cable::new(28, 0, 12, 0),
                 Cable::new(0, 37, 12, 1),
                 Cable::new(12, 0, 44, 0),
-                Cable::new(28, 0, 44, 1),
+                Cable::new(0, 37, 44, 1),
+                //Cable::new(28, 0, 44, 1),
                 Cable::new(44, 0, 49, 0),
                 // Osc13
                 Cable::new(0, 39, 29, 0),
@@ -195,7 +209,8 @@ impl ModTable {
                 Cable::new(29, 0, 13, 0),
                 Cable::new(0, 40, 13, 1),
                 Cable::new(13, 0, 45, 0),
-                Cable::new(29, 0, 45, 1),
+                Cable::new(0, 40, 45, 1),
+                //Cable::new(29, 0, 45, 1),
                 Cable::new(45, 0, 49, 0),
                 // Osc14
                 Cable::new(0, 42, 30, 0),
@@ -203,7 +218,8 @@ impl ModTable {
                 Cable::new(30, 0, 14, 0),
                 Cable::new(0, 43, 14, 1),
                 Cable::new(14, 0, 46, 0),
-                Cable::new(30, 0, 46, 1),
+                Cable::new(0, 43, 46, 1),
+                //Cable::new(30, 0, 46, 1),
                 Cable::new(46, 0, 49, 0),
                 // Osc15
                 Cable::new(0, 45, 31, 0),
@@ -211,7 +227,8 @@ impl ModTable {
                 Cable::new(31, 0, 15, 0),
                 Cable::new(0, 46, 15, 1),
                 Cable::new(15, 0, 47, 0),
-                Cable::new(31, 0, 47, 1),
+                Cable::new(0, 46, 47, 1),
+                //Cable::new(31, 0, 47, 1),
                 Cable::new(47, 0, 49, 0),
                 // Osc16
                 Cable::new(0, 48, 32, 0),
@@ -219,11 +236,14 @@ impl ModTable {
                 Cable::new(32, 0, 16, 0),
                 Cable::new(0, 49, 16, 1),
                 Cable::new(16, 0, 48, 0),
-                Cable::new(32, 0, 48, 1),
+                Cable::new(0, 49, 48, 1),
+                //Cable::new(32, 0, 48, 1),
                 Cable::new(48, 0, 49, 0),
 
                 // Chorus to delay
                 Cable::new(49, 0, 50, 0),
+                // Delay to reverb
+                Cable::new(50, 0, 51, 0),
             ],
         }
     }
@@ -239,7 +259,7 @@ impl ModTable {
             self.modules[input_module_index].modulate(cable.target_input, output);
         });
 
-        self.modules[50].get_output(0)
+        self.modules[51].get_output(0)
     }
 
     pub fn update(&mut self, id: usize, msg: ModuleMessage) {

@@ -37,7 +37,7 @@ impl Chorus {
     pub fn new(id: usize, sample_rate: usize) -> Self {
         Self {
             id,
-            ratio: 0.5,
+            ratio: 0.0,
             max_delay: 128.0,
             input: Inputs::default(),
             output: Outputs::default(),

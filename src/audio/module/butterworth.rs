@@ -35,7 +35,7 @@ impl Butterworth {
         Self {
             id,
             sample_rate,
-            frequency: 0.1,
+            frequency: 1.0,
             input: Inputs::default(),
             output: Outputs::default(),
             x_minus: 0.0,
@@ -43,6 +43,11 @@ impl Butterworth {
             y_minus: 0.0,
             y_minus2: 0.0,
         }
+    }
+
+    pub fn cutoff(mut self, freq: f32) -> Self {
+        self.frequency = freq.log2() / 14.55;
+        self
     }
 }
 

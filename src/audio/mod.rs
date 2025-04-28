@@ -74,7 +74,7 @@ impl AudioState {
                 buffer.push(sample * 0.1);
             }
 
-            println!("{:?}", dt.elapsed());
+            //println!("{:?}", dt.elapsed());
 
             while dt.elapsed() < buffer_time_messages {
                 self.update(&mut receiver);
