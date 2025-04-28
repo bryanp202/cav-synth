@@ -47,7 +47,7 @@ impl Envelope {
             release_start_value: 0.0,
             attack: 1.5,
             decay: 1.0,
-            release: 2.0,
+            release: 5.0,
             sustain: 0.6,
             input: Inputs::default(),
             output: Outputs::default(),
@@ -76,7 +76,7 @@ impl Module for Envelope {
         } else if let Some(released_time) = self.released {
             let elapsed = released_time.elapsed().as_secs_f32();
 
-            let raw = self.release_start_value * (1.0 - elapsed / self.release);
+            let raw = self.release_start_value * (1.0 - (elapsed / self.release).powf(0.4));
             self.output.value = raw.max(0.0);
         }
     }

@@ -14,7 +14,8 @@ struct Inputs {
 
 #[derive(Default)]
 struct Outputs {
-    value: f32,
+    left: f32,
+    right: f32,
 }
 
 pub struct Reverb {
@@ -41,13 +42,13 @@ impl Reverb {
                 Allpass::new(id, 0.7, 200),
                 Allpass::new(id, 0.7, 80),
             ],
-            lp: Butterworth::new(id, sample_rate).cutoff(10000.0),
+            lp: Butterworth::new(id, sample_rate).cutoff(8000.0),
             lfo: Lfo::new(id, sample_rate).frequency(0.06),
             combs: [
-                Comb::new(id, 0.783, 1835),
-                Comb::new(id, 0.771, 2133),
-                Comb::new(id, 0.763, 1478),
-                Comb::new(id, 0.743, 1911),
+                Comb::new(id, 0.913, 1835),
+                Comb::new(id, 0.871, 2133),
+                Comb::new(id, 0.863, 1478),
+                Comb::new(id, 0.903, 1911),
             ],
         }
     }
@@ -59,7 +60,8 @@ impl Module for Reverb {
     }
 
     fn process(&mut self) {
-        self.output.value = self.input.value * (1.0 - self.wet);
+        self.output.left = self.input.value * (1.0 - self.wet);
+        self.output.right = self.input.value * (1.0 - self.wet);
 
         for ap in &mut self.allpass {
             ap.process();
@@ -77,15 +79,25 @@ impl Module for Reverb {
         self.lfo.process();
         let lfo_out = self.lfo.get_output(0);
 
-        let mut wet_total = 0.0;
+        let mut left_wet_total = 0.0;
+        let mut right_wet_total = 0.0;
+        let mut add_wet = true;
         for comb in &mut self.combs {
             comb.process();
             comb.modulate(0, lp_out);
             comb.modulate(1, lfo_out);
-            wet_total += comb.get_output(0) * 0.25;
+            left_wet_total += comb.get_output(0);
+
+            if add_wet {
+                right_wet_total += comb.get_output(0)
+            } else {
+                right_wet_total -= comb.get_output(0);
+            }
+            add_wet = !add_wet;
         }
 
-        self.output.value += wet_total * self.wet;
+        self.output.left += left_wet_total * self.wet * 0.25;
+        self.output.right += right_wet_total * self.wet * 0.25;
     }
 
     fn update(&mut self, msg: ModuleMessage) {
@@ -98,7 +110,8 @@ impl Module for Reverb {
 
     fn get_output(&self, target_output: usize) -> f32 {
         match target_output {
-            0 => self.output.value,
+            0 => self.output.left,
+            1 => self.output.right,
             _ => unreachable!(),
         }
     }

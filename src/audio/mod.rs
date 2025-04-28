@@ -70,8 +70,9 @@ impl AudioState {
             let mut buffer = Vec::with_capacity(BUFFER_SIZE);
 
             for _ in 0..BUFFER_SIZE {
-                let sample = self.table.process();
-                buffer.push(sample * 0.1);
+                let (sample1, sample2) = self.table.process();
+                buffer.push(sample1 * 0.1);
+                buffer.push(sample2 * 0.1);
             }
 
             //println!("{:?}", dt.elapsed());
@@ -81,7 +82,7 @@ impl AudioState {
             }
             while dt.elapsed() < buffer_time {}
 
-            let audio_buf = SamplesBuffer::new(1, self.sample_rate as u32, buffer);
+            let audio_buf = SamplesBuffer::new(2, self.sample_rate as u32, buffer);
 
             sink.append(audio_buf);
 
