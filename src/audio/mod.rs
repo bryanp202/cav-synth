@@ -76,12 +76,12 @@ impl AudioState {
                 buffer.push(sample2 * 0.1);
             }
 
-            println!("{:?}", dt.elapsed());
+            // println!("{:?}", dt.elapsed());
 
             while dt.elapsed() < buffer_time_messages {
                 self.update(&mut receiver);
             }
-            while dt.elapsed() < buffer_time {}
+            while dt.elapsed() < buffer_time {std::hint::spin_loop()}
 
             let audio_buf = SamplesBuffer::new(2, self.sample_rate as u32, buffer);
 

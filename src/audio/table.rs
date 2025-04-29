@@ -1,5 +1,6 @@
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Barrier};
+use std::time::Instant;
 
 use crate::audio::module::Module;
 use crate::audio::module::midi::Midi;
