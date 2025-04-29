@@ -53,8 +53,9 @@ impl AudioState {
         match audio_thread_priority::promote_current_thread_to_real_time(0, 48000) {
             Ok(_) => println!("Upgraded thread to real time"),
             Err(e) => eprintln!("Error on upgrade to real time: {e}"),
-
         }
+
+        self.table.init_threads();
 
         let (_stream, stream_handle) = OutputStream::try_default().unwrap();
         let sink = Sink::try_new(&stream_handle).unwrap();
@@ -75,7 +76,7 @@ impl AudioState {
                 buffer.push(sample2 * 0.1);
             }
 
-            //println!("{:?}", dt.elapsed());
+            println!("{:?}", dt.elapsed());
 
             while dt.elapsed() < buffer_time_messages {
                 self.update(&mut receiver);

@@ -1,3 +1,6 @@
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::{Arc, Barrier};
+
 use crate::audio::module::Module;
 use crate::audio::module::midi::Midi;
 
@@ -8,6 +11,38 @@ use super::module::delay::Delay;
 use super::module::envelope::Envelope;
 use super::module::reverb::Reverb;
 use super::module::ModuleMessage;
+
+const THREAD_COUNT: usize = 2;
+
+pub struct SpinBarrier {
+    count: usize,
+    arrival: AtomicUsize,
+    generation: AtomicUsize,
+}
+
+impl SpinBarrier {
+    pub fn new(count: usize) -> Self {
+        Self {
+            count,
+            arrival: AtomicUsize::new(0),
+            generation: AtomicUsize::new(0),
+        }
+    }
+
+    pub fn wait(&self) {
+        let gen = self.generation.load(Ordering::Acquire);
+
+        if self.arrival.fetch_add(1, Ordering::AcqRel) + 1 == self.count {
+            self.arrival.store(0, Ordering::Release);
+            self.generation.fetch_add(1, Ordering::Release);
+        } else {
+            while self.generation.load(Ordering::Acquire) == gen {
+                std::hint::spin_loop();
+            }
+        }
+    }
+}
+
 
 struct Cable {
     source_module: usize,
@@ -33,13 +68,17 @@ impl Cable {
 }
 
 pub struct ModTable {
-    modules: Vec<Box<dyn Module>>,
+    process_barrier: Arc<SpinBarrier>,
+    sample_barrier: Arc<SpinBarrier>,
+    modules: Vec<Box<dyn Module + Send + Sync>>,
     cables: Vec<Cable>,
 }
 
 impl ModTable {
-    pub fn new() -> Self {        
+    pub fn new() -> Self {
         Self {
+            process_barrier: Arc::new(SpinBarrier::new(THREAD_COUNT + 1)),
+            sample_barrier: Arc::new(SpinBarrier::new(THREAD_COUNT + 1)),
             modules: vec![
                 Box::new(Midi::new(0)),
                 Box::new(AnalogOscillator::new(1, 48000)),
@@ -248,8 +287,53 @@ impl ModTable {
         }
     }
 
+    pub fn init_threads(&mut self) {
+        struct ModuleChunk {
+            ptr: *mut Box<dyn Module + Send + Sync>,
+            len: usize,
+        }
+
+        unsafe impl Send for ModuleChunk {}
+
+        let module_chunk_len = self.modules.len().div_ceil(THREAD_COUNT);
+        let mut modules_chunks = self.modules.rchunks_mut(module_chunk_len);
+
+        for _ in 0..THREAD_COUNT {
+            let modules_chunk = modules_chunks.next().unwrap();
+            let chunk_ptr = modules_chunk.as_mut_ptr();
+            let chunk_len = modules_chunk.len();
+            let chunk = ModuleChunk {ptr: chunk_ptr, len: chunk_len};
+
+            let process_barrier = Arc::clone(&self.process_barrier);
+            let sample_barrier = Arc::clone(&self.sample_barrier);
+            std::thread::spawn(move || {
+                let chunk = chunk;
+                let modules: &mut [Box<dyn Module + Send + Sync>] = unsafe {
+                    std::slice::from_raw_parts_mut(chunk.ptr, chunk.len)
+                };
+
+                match audio_thread_priority::promote_current_thread_to_real_time(0, 48000) {
+                    Ok(_) => println!("Upgraded thread to real time"),
+                    Err(e) => eprintln!("Error on upgrade to real time: {e}"),
+                }
+
+                process_barrier.wait();
+                loop {
+                    sample_barrier.wait();
+                    for module in modules.iter_mut() {
+                        module.process();
+                    }
+                    process_barrier.wait();
+                }
+            });
+        }
+    }
+
     pub fn process(&mut self) -> (f32, f32) {
-        self.modules.iter_mut().for_each(|module| module.process());
+        // Wait for process
+        self.process_barrier.wait();
+
+        //self.modules.iter_mut().for_each(|module| module.process());
 
         self.cables.iter().for_each(|cable| {
             let output_module_index = cable.source_module;
@@ -259,7 +343,11 @@ impl ModTable {
             self.modules[input_module_index].modulate(cable.target_input, output);
         });
 
-        (self.modules[51].get_output(0), self.modules[51].get_output(1))
+        // Get sample
+        let sample = (self.modules[51].get_output(0), self.modules[51].get_output(1));
+        // Unlock process
+        self.sample_barrier.wait();
+        sample
     }
 
     pub fn update(&mut self, id: usize, msg: ModuleMessage) {
