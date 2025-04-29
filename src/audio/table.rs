@@ -12,7 +12,7 @@ use super::module::envelope::Envelope;
 use super::module::reverb::Reverb;
 use super::module::ModuleMessage;
 
-const THREAD_COUNT: usize = 2;
+const THREAD_COUNT: usize = 4;
 
 pub struct SpinBarrier {
     count: usize,

@@ -48,7 +48,7 @@ impl AudioState {
     }
 
     fn render(&mut self, mut receiver: Receiver<Input>) {
-        const BUFFER_SIZE: usize = 128;
+        const BUFFER_SIZE: usize = 512;
 
         match audio_thread_priority::promote_current_thread_to_real_time(0, 48000) {
             Ok(_) => println!("Upgraded thread to real time"),
